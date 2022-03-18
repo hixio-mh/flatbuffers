@@ -6,7 +6,7 @@
     <parent>
         <groupId>com.google.flatbuffers</groupId>
         <artifactId>flatbuffers-parent</artifactId>
-        <version>1.12.0</version>
+        <version>2.0.3</version>
     </parent>
     <artifactId>flatbuffers-java-grpc</artifactId>
     <name>${project.artifactId}</name>
@@ -24,7 +24,11 @@
         </developer>
     </developers>
     <properties>
+snyk-upgrade-62c7bcae9dc722d5a3a936ea873ecb3f
         <gRPC.version>1.41.0</gRPC.version>
+
+        <gRPC.version>1.36.0</gRPC.version>
+master
     </properties>
     <dependencies>
         <dependency>
