@@ -24,6 +24,9 @@
         </developer>
     </developers>
     <properties>
+ snyk-fix-9aeb4c4a19851e76d0c875c41460e2b4
+        <gRPC.version>1.31.0</gRPC.version>
+
  snyk-upgrade-ce3418371c56ccb8dd11eef5a4a958cc
         <gRPC.version>1.38.1</gRPC.version>
 
