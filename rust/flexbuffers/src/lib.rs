@@ -12,44 +12,42 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#![cfg_attr(test, feature(test))]
 //! Flexbuffers is a high performance schemaless binary data format designed at Google.
 //! It is complementary to the schema-ed format [Flatbuffers](http://docs.rs/flatbuffers/).
 //! See [Flexbuffer Internals](https://google.github.io/flatbuffers/flatbuffers_internals.html)
 //! for details on the binary format.
 //!
-//! * [See the examples for usage.](https://github.com/CasperN/flexbuffers/tree/master/examples)
+//! See the examples for usage:
+//! * [Example](https://github.com/google/flatbuffers/blob/master/samples/sample_flexbuffers.rs)
+//! * [Serde Example](https://github.com/google/flatbuffers/blob/master/samples/sample_flexbuffers_serde.rs)
 //!
 //! This rust implementation is in progress and, until the 1.0 release, breaking API changes may
-/// happen between minor versions.
+//! happen between minor versions.
 // TODO(cneo): serde stuff are behind a default-on feature flag
 //             Reader to Json is behind a default-off feature flag
 //             Serializable structs are Pushable
 //             Serde with maps - field names and type names.
+
+// Until flat/flexbuffers is on Rust v1.42, we cannot use the previously unstable matches! macro.
+#![allow(clippy::unknown_clippy_lints)]
+#![allow(clippy::match_like_matches_macro)]
 
 #[macro_use]
 extern crate bitflags;
 extern crate byteorder;
 #[macro_use]
 extern crate serde_derive;
-#[macro_use]
-extern crate debug_stub_derive;
 extern crate num_enum;
-#[cfg(test)]
-extern crate quickcheck;
-#[cfg(test)]
-extern crate quickcheck_derive;
-#[cfg(test)]
-extern crate rand;
 extern crate serde;
-#[cfg(test)]
-extern crate test;
 
 mod bitwidth;
+mod buffer;
 mod builder;
 mod flexbuffer_type;
 mod reader;
+
 pub use bitwidth::BitWidth;
+pub use buffer::Buffer;
 pub use builder::Error as SerializationError;
 pub use builder::{
     singleton, Builder, BuilderOptions, FlexbufferSerializer, MapBuilder, Pushable, VectorBuilder,
@@ -69,17 +67,32 @@ pub fn to_vec<T: Serialize>(x: T) -> Result<Vec<u8>, SerializationError> {
     x.serialize(&mut s)?;
     Ok(s.take_buffer())
 }
+
 /// Deserialize a type from a flexbuffer.
 pub fn from_slice<'de, T: Deserialize<'de>>(buf: &'de [u8]) -> Result<T, DeserializationError> {
     let r = Reader::get_root(buf)?;
     T::deserialize(r)
 }
 
+/// Deserialize a type from a flexbuffer.
+pub fn from_buffer<'de, T: Deserialize<'de>, B: Buffer>(
+    buf: &'de B,
+) -> Result<T, DeserializationError> {
+    let r = Reader::get_root(buf as &'de [u8])?;
+    T::deserialize(r)
+}
+
 /// This struct, when pushed will be serialized as a `FlexBufferType::Blob`.
 ///
 /// A `Blob` is a variable width `length` followed by that many bytes of data.
-#[derive(Debug, Copy, Clone, PartialEq, Eq)]
-pub struct Blob<'a>(pub &'a [u8]);
+#[derive(Debug, PartialEq, Eq)]
+pub struct Blob<B>(pub B);
+
+impl<B: Buffer> Clone for Blob<B> {
+    fn clone(&self) -> Self {
+        Blob(self.0.shallow_copy())
+    }
+}
 
 /// This struct, when pushed, will be serialized as a `FlexBufferType::IndirectUInt`.
 ///
