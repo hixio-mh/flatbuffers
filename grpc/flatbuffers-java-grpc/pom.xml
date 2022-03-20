@@ -24,6 +24,9 @@
         </developer>
     </developers>
     <properties>
+      snyk-upgrade-5103fae84b91a2712b907e7e60408cb4
+        <gRPC.version>1.44.0</gRPC.version>
+
  snyk-upgrade-a6a7306ef129010f18694f8cf43132f1
         <gRPC.version>1.43.2</gRPC.version>
 
@@ -49,10 +52,7 @@ snyk-upgrade-62c7bcae9dc722d5a3a936ea873ecb3f
 
         <gRPC.version>1.36.0</gRPC.version>
 master
-
-
-
-    </properties>
+  </properties>
     <dependencies>
         <dependency>
             <groupId>com.google.flatbuffers</groupId>
