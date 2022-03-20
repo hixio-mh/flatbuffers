@@ -36,6 +36,10 @@ impl FlexbufferSerializer {
     pub fn take_buffer(&mut self) -> Vec<u8> {
         self.builder.take_buffer()
     }
+    pub fn reset(&mut self) {
+        self.builder.reset();
+        self.nesting.clear();
+    }
     fn finish_if_not_nested(&mut self) -> Result<(), Error> {
         if self.nesting.is_empty() {
             assert_eq!(self.builder.values.len(), 1);
@@ -217,6 +221,9 @@ impl<'a> ser::Serializer for &'a mut FlexbufferSerializer {
     type SerializeStructVariant = &'a mut FlexbufferSerializer;
     type Ok = ();
     type Error = Error;
+    fn is_human_readable(&self) -> bool {
+        cfg!(serialize_human_readable)
+    }
     fn serialize_bool(self, v: bool) -> Result<Self::Ok, Self::Error> {
         self.builder.push(v);
         self.finish_if_not_nested()
@@ -270,7 +277,7 @@ impl<'a> ser::Serializer for &'a mut FlexbufferSerializer {
         self.finish_if_not_nested()
     }
     fn serialize_bytes(self, v: &[u8]) -> Result<Self::Ok, Self::Error> {
-        self.builder.push(v);
+        self.builder.push(crate::Blob(v));
         self.finish_if_not_nested()
     }
     fn serialize_none(self) -> Result<Self::Ok, Self::Error> {
